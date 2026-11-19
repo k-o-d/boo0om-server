@@ -48,10 +48,10 @@ We have not tested ACE-Step ourselves; these steps come from its own documentati
 
 ### In your browser: free plans of online services
 
-Online generators such as [Suno](https://suno.com) and [Udio](https://www.udio.com) make songs in your browser with nothing to install, and have free plans with a daily allowance. Two things to know:
+Online generators such as [Suno](https://suno.com) make songs in your browser with nothing to install. Suno has a free plan. Two things to know before you use any such service:
 
 - **Free plans are for personal, non-commercial listening.** On Suno's free plan, Suno keeps ownership of the songs and lets you use them non-commercially; you may not sell them or earn money from them. Playing them at home in Boo0om is the kind of use that plan is for. Paid plans come with commercial rights.
-- **Download the song as a file** (MP3 or WAV) from the service, then put it in your `music` folder like any other song.
+- **You need the song as a file.** Check that the service and plan you pick let you download what you make (MP3 or WAV); not every service does. Then put the file in your `music` folder like any other song.
 
 Read the service's current terms before using its songs for anything public.
 
