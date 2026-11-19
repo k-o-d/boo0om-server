@@ -1,0 +1,17 @@
+# docker compose up -d
+#
+# Put your music in ./music (or point the first volume at the folder that
+# already holds it). ./data keeps resized covers and the downloads list.
+services:
+  boo0om:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "9813:9813"
+    volumes:
+      - ./music:/music:ro        # change ./music to your music folder
+      - ./data:/data
+    environment:
+      # Docker can't see your network address, so the log line that prints
+      # the address for the app is skipped here; use this computer's address.
+      RESCAN_MINUTES: "15"

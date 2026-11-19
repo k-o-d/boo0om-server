@@ -1,0 +1,8 @@
+# Where is your music?
+#
+# Leave this file as it is to use the "music" folder next to it.
+# To use a folder you already have, write its full path on a line of its own
+# below (no # in front), save, and start the server again. Examples:
+#
+#   /Users/yourname/Music/Songs
+#   D:\Music
