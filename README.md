@@ -29,6 +29,8 @@ To stop the server, close its window. To start it again, double-click the same f
 
 No music yet? The first start adds three short demo tracks, so you can check that everything works before copying your own music in. Delete the `Boo0om Demo` folder inside `music` whenever you like.
 
+Need music to put in? See [three ways to fill your library](docs/getting-music.md): music you own, free music you may keep, and making your own with an AI music generator.
+
 ## If something doesn't work
 
 | What you see | What to try |
