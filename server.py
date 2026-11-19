@@ -17,6 +17,9 @@ Settings (environment variables, all optional):
     DEMO            1 = if MUSIC_DIR has no music, write three short
                     synthesized tracks into it so there is something to play
     OPEN_BROWSER    1 = open the status page in your browser at start
+    READ_ONLY       1 = public demo mode: the downloads list is switched off
+                    and the status page hides this computer's details
+    PUBLIC_URL      the address to show on the status page in that mode
 
 Run it with:  python server.py
 """
@@ -66,6 +69,11 @@ PORT = int(os.environ.get("PORT", "9813"))
 RESCAN_MINUTES = float(os.environ.get("RESCAN_MINUTES", "15"))
 DEMO = os.environ.get("DEMO", "").lower() in ("1", "true", "yes")
 OPEN_BROWSER = os.environ.get("OPEN_BROWSER", "").lower() in ("1", "true", "yes")
+# For a server that anyone on the internet can reach (a demo library): nothing
+# a visitor sends is stored, and the status page shows PUBLIC_URL instead of
+# this computer's address and folder.
+READ_ONLY = os.environ.get("READ_ONLY", "").lower() in ("1", "true", "yes")
+PUBLIC_URL = os.environ.get("PUBLIC_URL", "").strip().rstrip("/")
 
 # Formats the app's player (AVPlayer on iOS) can play.
 AUDIO_TYPES = {
@@ -449,9 +457,14 @@ app = FastAPI(title="Boo0om home server", version="1.0.0", docs_url="/docs", red
 @app.get("/", response_class=HTMLResponse)
 def home():
     """The status page: is it running, how much music, what to type in the app."""
-    address = lan_address()
-    url = f"http://{address}:{PORT}" if address else None
+    address = None if READ_ONLY else lan_address()
+    url = PUBLIC_URL or (f"http://{address}:{PORT}" if address else None)
     empty = not library.tracks
+    folder_line = "" if READ_ONLY else f'<div class="small">Music folder: <code>{html.escape(str(MUSIC_DIR))}</code></div>'
+    network_line = ("This is a public demo library. Anyone can listen; nothing you do is stored."
+                    if READ_ONLY else "Your phone has to be on the same Wi-Fi as this computer.")
+    closing_line = ("" if READ_ONLY else
+                    '{closing_line}')
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Boo0om home server</title>
@@ -471,12 +484,12 @@ def home():
 <div class="box">
   <div class="small">Type this into the Boo0om app, under Settings → Server</div>
   <div class="address">{html.escape(url) if url else "this computer's network address, then :" + str(PORT)}</div>
-  <div class="small">Your phone has to be on the same Wi-Fi as this computer.</div>
+  <div class="small">{network_line}</div>
 </div>
 <div class="box">
   <strong>{len(library.tracks)}</strong> songs · <strong>{len(library.albums)}</strong> albums ·
   <strong>{len(library.artists)}</strong> artists
-  <div class="small">Music folder: <code>{html.escape(str(MUSIC_DIR))}</code></div>
+  {folder_line}
   {'<p class="warn">No music found yet. Copy some songs into that folder; they show up within '
    + str(int(RESCAN_MINUTES) or 15) + ' minutes, or right away if you restart the server.</p>' if empty else ''}
 </div>
@@ -746,6 +759,8 @@ def sync_file(raw_username: str) -> Path:
 def save_downloads(payload: SyncRequest):
     """Adds a device's downloaded tracks to the user's list. Tracks are only
     ever added, so a new device can't empty another device's list."""
+    if READ_ONLY:
+        raise HTTPException(status_code=403, detail="This is a read-only demo library; the downloads list is switched off.")
     path = sync_file(payload.username)
     if len(payload.tracks) > MAX_SYNC_TRACKS:
         raise HTTPException(status_code=413, detail=f"Too many tracks in one push (max {MAX_SYNC_TRACKS})")
@@ -781,7 +796,7 @@ def save_downloads(payload: SyncRequest):
 @app.get("/api/v1/sync/downloads/{username}")
 def get_downloads(username: str):
     path = sync_file(username)
-    if not path.is_file():
+    if READ_ONLY or not path.is_file():
         raise HTTPException(status_code=404, detail="No saved downloads for this username")
     saved = json.loads(path.read_text(encoding="utf-8"))
     tracks = saved.get("tracks", [])
@@ -805,13 +820,13 @@ def lan_address() -> Optional[str]:
 
 def start() -> None:
     MUSIC_DIR.mkdir(parents=True, exist_ok=True)
-    if DEMO and not has_music():
+    if DEMO and not READ_ONLY and not has_music():
         print("DEMO=1 and no music found: writing three demo tracks.", flush=True)
         write_demo_tracks()
     rescan()
     threading.Thread(target=rescan_forever, daemon=True).start()
     address = lan_address()
-    if address and HOST in ("0.0.0.0", "::"):
+    if address and not READ_ONLY and HOST in ("0.0.0.0", "::"):
         print(f"\nIn the Boo0om app, set the server to  http://{address}:{PORT}\n", flush=True)
     if OPEN_BROWSER:
         import webbrowser

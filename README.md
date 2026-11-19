@@ -50,7 +50,7 @@ No music yet? The first start adds three short demo tracks, so you can check tha
 
 ## Keep it at home
 
-This server has **no password**. It is meant for your home network, where only your own devices can reach it. Don't open its port on your router or put it on the public internet. To listen away from home, use a private network such as [Tailscale](https://tailscale.com) or your router's VPN, and type the computer's address on that network into the app.
+This server has **no password**. It is meant for your home network, where only your own devices can reach it. Don't open its port on your router or put it on the public internet. If you do want a public library of music you are allowed to share, start it with `READ_ONLY=1` behind HTTPS; it then stores nothing a visitor sends. To listen away from home, use a private network such as [Tailscale](https://tailscale.com) or your router's VPN, and type the computer's address on that network into the app.
 
 ## For people comfortable with a terminal
 
@@ -77,6 +77,8 @@ Settings are environment variables, all optional:
 | `RESCAN_MINUTES` | `15` | how often to look for new files; `0` turns it off |
 | `DEMO` | off (the double-click starters turn it on) | `1` writes three synthesized demo tracks when the music folder is empty |
 | `OPEN_BROWSER` | off (the double-click starters turn it on) | `1` opens the status page at start |
+| `READ_ONLY` | off | `1` for a server the whole internet can reach: the downloads list is switched off and the status page hides this computer's address and folder |
+| `PUBLIC_URL` | none | the address the status page shows when `READ_ONLY` is on |
 
 The app talks to `/api/v1/...`; `http://localhost:9813/docs` lists every address the server answers. The whole server is one file, `server.py`.
 
